@@ -1,0 +1,20 @@
+.main {
+  display: flex;
+  flex-direction: row;
+  gap: var(--space);
+}
+.main_arrow {
+  align-items: center;
+  border: var(--border);
+  display: flex;
+  height: fit-content;
+  justify-content: center;
+  flex: 1;
+  min-height: var(--main);
+}
+.main_arrow.empty {
+  border-color: var(--color_layer1);
+}
+.main_arrow.active {
+  border-color: blue;
+}

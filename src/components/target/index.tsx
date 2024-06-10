@@ -1,54 +1,18 @@
+"use client";
+
 import { FC, TouchList, useEffect, useRef, useState } from "react";
 import { useMediaQuery } from "react-responsive";
-import Button from "../Button";
 import ArrowCarousel from "./ArrowCarousel";
-import CarouselContext from "./CarouselContext";
-import { Vector } from "./lib/types";
+import { CoordinatePair, Vector } from "./lib/types";
 import xyToDist from "./lib/xyToDist";
 import xyToRad from "./lib/xyToRad";
 import styles from "./target.module.css";
+import { Button } from "antd";
+import extractTouch from "./lib/extractTouch";
+import getRingColor from "./lib/getRingColor";
+import mergeArrow from "./lib/mergeArrow";
 
-type Status = { isReady: boolean; meta: string };
-type CoordinatePair = [number, number];
-interface Props {
-  statusObserver?: (p: Status) => void;
-}
-
-const extractTouch = (touches: TouchList): CoordinatePair => {
-  // always selecting the first touch... fragile?
-  const t = Object.values(touches)[0];
-  const x = t.clientX;
-  const y = t.clientY - 60;
-  return [x, y];
-};
-
-const mergeArrow = (
-  arrows: ReturnType<typeof extractTouch>[],
-  arrow: ReturnType<typeof extractTouch>,
-  index: number
-) => {
-  const left = arrows!.slice(0, index - 1);
-  const right = arrows!.slice(index);
-  return [...left, arrow, ...right];
-};
-
-const getRingColor = (ringNo: number) => {
-  const colors: { [k: number]: string } = {
-    10: "#F4F4F6",
-    9: "#F4F4F6",
-    8: "#343633",
-    7: "#343633",
-    6: "#01BAEF",
-    5: "#01BAEF",
-    4: "#FF6B6B",
-    3: "#FF6B6B",
-    2: "#FFB85C",
-    1: "#FFB85C",
-  };
-  return colors[ringNo];
-};
-
-const Target: FC<Props> = (props) => {
+const Target = () => {
   const targetRef = useRef<SVGSVGElement>(null);
   const boundaryRef = useRef<SVGCircleElement>(null);
   const [ringCt, setRingCt] = useState(10);
@@ -206,9 +170,7 @@ const Target: FC<Props> = (props) => {
         <div className="hpad">
           <div className={styles.main_buttonRow}>
             <Button
-              style={{ width: "100%" }}
               disabled={!touchIsActive}
-              size="tall"
               onTouchStart={() => confirmArrow()}
             >
               Confirm Arrow

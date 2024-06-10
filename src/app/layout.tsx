@@ -1,5 +1,4 @@
 import React from "react";
-import "@/css/globals.css";
 import GoogleAnalytics from "@/lib/ga4/googleAnalytics";
 import { StyleProvider } from "@/components/StyleProvider";
 import { Space } from "antd";
@@ -11,9 +10,7 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
     <html lang="en">
       <body>
         <GoogleAnalytics />
-        <StyleProvider>
-          <Space>{children}</Space>
-        </StyleProvider>
+        <StyleProvider>{children}</StyleProvider>
       </body>
     </html>
   );

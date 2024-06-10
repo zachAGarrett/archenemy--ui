@@ -1,4 +1,3 @@
-export type Coord = [number, number];
 export interface Vector {
   angle: number;
   distance: number;
@@ -8,3 +7,5 @@ export interface Target {
   rings: number;
   maxVal: number;
 }
+
+export type CoordinatePair = [number, number];

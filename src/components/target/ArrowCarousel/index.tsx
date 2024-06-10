@@ -1,7 +1,7 @@
 import { Dispatch, FC, SetStateAction, useState } from "react";
-import Button from "../../Button";
 import { Target, Vector } from "../lib/types";
 import styles from "./arrowCarousel.module.css";
+import { Button } from "antd";
 
 interface Props {
   activeArrow: number;

@@ -1,7 +1,7 @@
 import React from "react";
 import GoogleAnalytics from "@/lib/ga4/googleAnalytics";
 import { StyleProvider } from "@/components/StyleProvider";
-import { Space } from "antd";
+import "@/app/globals.css";
 
 export const dynamic = "force-dynamic";
 

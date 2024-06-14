@@ -1,4 +1,4 @@
-import { Arrow, CoordinatePair, SVGDim } from "./types";
+import { Arrow, SVGDim } from "./types";
 
 export interface DrawGuideLineProps {
   activeArrow?: Arrow;

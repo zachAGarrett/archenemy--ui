@@ -1,31 +1,42 @@
-"use client"
+"use client";
 
-import { Divider, Space } from "antd";
+import { Card, Divider, List, Space } from "antd";
 import ArrowPlotter from "./ArrowPlotter";
-import { Arrow, ArrowPlotterProps } from "./lib/types";
+import { Arrow, Rules, Target } from "./lib/types";
+import { useState } from "react";
+import chunkArray from "./lib/chunkArray";
 import Scorecard from "./Scorecard";
-import { useState,createContext } from "react";
-
-
-const Arrows = createContext<Arrow[] | null>(null);
 
 export default function ScoringApp() {
-  const rules: ArrowPlotterProps["rules"] = { setSize: 3 };
-  const target: ArrowPlotterProps["target"] = {
+  const rules: Rules = { setSize: 3 };
+  const target: Target = {
+    id: "test",
     radius: 66,
     rings: 10,
     max: 10,
     min: 0,
   };
 
-  const arrowState = useState<Arrow[]>()
-  const [focusedArrows, setFocusedArrows] = useState<number[]>();
+  const [arrows, setArrows] = useState<Arrow[]>([]);
+  const [activeArrow, setActiveArrow] = useState<string>();
+  const [previouslyActiveArrow, setPreviouslyActiveArrow] = useState<string>();
+  const [focusedArrows, setFocusedArrows] = useState<string[]>();
 
   return (
-    <Space>
-      <ArrowPlotter {...{ rules, target, focusedArrows, arrowState }} />
-      <Divider />
-      {/* <Scorecard /> */}
+    <Space direction="vertical" style={{ width: "100%" }}>
+      <ArrowPlotter
+        target={target}
+        focusedArrows={focusedArrows}
+        arrowState={[arrows, setArrows]}
+        activeArrowState={[activeArrow, setActiveArrow]}
+        setPreviouslyActiveArrow={setPreviouslyActiveArrow}
+        preventTouch={false}
+      />
+      <Scorecard
+        sets={arrows && chunkArray(arrows, rules.setSize)}
+        target={target}
+        activeArrowState={[activeArrow, setActiveArrow]}
+      />
     </Space>
   );
 }

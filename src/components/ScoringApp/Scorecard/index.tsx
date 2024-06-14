@@ -1,89 +1,59 @@
-"use client";
-
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { Arrow, Target, Vector } from "../lib/types";
-import { Tabs, Typography } from "antd";
-import clamp from "../lib/clamp";
-import chunkArray from "../lib/chunkArray";
+import { ActiveArrowState, Arrow, Set, Target } from "../lib/types";
+import { Card, Tabs, Typography } from "antd";
 import ArrowDetailTab from "./ArrowDetailTab";
 
 const { Text } = Typography;
 
 export interface ScorecardProps {
-  activeArrow: number;
-  setActiveArrow: Dispatch<SetStateAction<number | null>>;
-  arrows?: Arrow[];
-  offset: number;
-  setOffset: Dispatch<SetStateAction<number>>;
-  setNumber: number;
-  setSetNumber: Dispatch<SetStateAction<number>>;
-  setSize: number;
-  setTouchIsActive: Dispatch<SetStateAction<boolean>>;
+  sets: Set[];
   target: Target;
+  activeArrowState: ActiveArrowState;
 }
 
 export default function Scorecard({
-  activeArrow,
-  setActiveArrow,
-  arrows,
-  offset,
-  setOffset,
-  setNumber,
-  setSetNumber,
-  setSize,
-  setTouchIsActive,
+  sets,
   target,
+  activeArrowState,
 }: ScorecardProps) {
-  const [sets, setSets] = useState<(Arrow | null)[][]>();
+  const [activeArrow, setActiveArrow] = activeArrowState;
+  const lastSetNumber = sets.length - 1;
+  const lastSet = sets[lastSetNumber];
+  const lastArrow = lastSet && lastSet[lastSet.length - 1];
+  const [activeSet, setActiveSet] = useState<string>();
 
-  useEffect(() => {
-    if (arrows === undefined) return;
-    setSets(chunkArray(arrows, setSize));
-  }, [arrows]);
-
-  return (
+  return sets.length > 0 ? (
     <Tabs
-      type="editable-card"
-      onTabClick={(key) => {
-        setOffset(Number(key));
-      }}
-      hideAdd
-      removeIcon
       tabPosition="left"
-      items={sets?.map((set, setIndex) => {
-        const setNumber = String(setIndex + 1);
+      activeKey={activeSet || String(lastSetNumber)}
+      onTabClick={(key) => {
+        setActiveSet(key);
+        setActiveArrow(sets[Number(key)][0].id);
+      }}
+      items={sets.map((set, setIndex) => {
+        const setNumber = setIndex + 1;
         return {
           label: `Set ${setNumber}`,
-          key: setNumber,
+          key: String(setIndex),
           children: (
             <Tabs
-              activeKey={String((activeArrow || 0) + 1)}
+              activeKey={activeArrow || lastArrow.id}
               tabPosition="top"
-              onTabClick={(key) => {
-                setActiveArrow(setIndex * setSize + Number(key));
-                setTouchIsActive(false);
-              }}
+              onTabClick={(key) => setActiveArrow(key)}
               items={set.map((arrow, arrowIndex) => {
                 const arrowNumber = String(arrowIndex + 1);
-                if (arrow === null) {
-                  return {
-                    disabled: true,
-                    label: `Arrow ${arrowNumber}`,
-                    key: arrowNumber,
-                    children: <Text>Place an arrow</Text>,
-                  };
-                } else {
-                  return {
-                    label: `Arrow ${arrowNumber}`,
-                    key: arrowNumber,
-                    children: <ArrowDetailTab {...{ arrow, target }} />,
-                  };
-                }
+                return {
+                  label: `Arrow ${arrowNumber}`,
+                  key: arrow.id,
+                  children: <ArrowDetailTab arrow={arrow} target={target} />,
+                };
               })}
             />
           ),
         };
       })}
     />
+  ) : (
+    <Card>Tap to place an arrow</Card>
   );
 }

@@ -1,13 +1,20 @@
-import { Arrow, CoordinatePair, SVGDim } from "./types";
+import { Arrow, SVGDim } from "./types";
 
 export interface DrawArrowsProps {
   svgDimensions: SVGDim;
   arrows?: Arrow[];
+  focusedArrows?: string[];
+  activeArrow?: string;
 }
 
-export default function drawArrows({ svgDimensions, arrows }: DrawArrowsProps) {
-  const focusAll = arrows?.every(({ focused }) => focused === undefined);
-  return arrows?.map(({ active, coordinates, focused }, i) => {
+export default function drawArrows({
+  svgDimensions,
+  arrows,
+  focusedArrows,
+  activeArrow,
+}: DrawArrowsProps) {
+  const focusAll = !focusedArrows;
+  return arrows?.map(({ coordinates, id }, i) => {
     const x = coordinates[0];
     const y = coordinates[1];
     const relX = `${
@@ -20,7 +27,7 @@ export default function drawArrows({ svgDimensions, arrows }: DrawArrowsProps) {
     return (
       <g key={i}>
         <circle key={`${i}-b`} cx={relX} cy={relY} r={1} fill="white">
-          {active && (
+          {id === activeArrow && (
             <>
               <animate
                 attributeType="SVG"
@@ -47,7 +54,7 @@ export default function drawArrows({ svgDimensions, arrows }: DrawArrowsProps) {
           cy={relY}
           r={1}
           fill="green"
-          opacity={focused || focusAll ? 1 : 0.3}
+          opacity={focusedArrows?.includes(id) || focusAll ? 1 : 0.3}
           stroke="black"
           strokeWidth={0.2}
         />

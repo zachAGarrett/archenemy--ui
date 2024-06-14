@@ -1,46 +1,34 @@
-"use client";
-
 import styles from "./arrowPlotter.module.css";
 import { useEffect, useRef, useState } from "react";
-import { Arrow, ArrowPlotterProps, CoordinatePair } from "../lib/types";
+import { Arrow, ArrowPlotterProps, SVGDim } from "../lib/types";
 import extractTouch from "../lib/extractTouch";
 import mergeArrow from "../lib/mergeArrow";
 import drawArrows from "../lib/drawArrows";
 import getSVGDimensions from "../lib/getSVGDimensions";
 import drawRings from "../lib/drawRings";
 import drawGuideLine from "../lib/drawGuideLine";
-import formatArrows from "../lib/formatArrows";
+import formatArrow from "../lib/formatArrow";
+import { v4 as uuid } from "uuid";
 
 export default function ArrowPlotter({
-  rules,
   target,
   focusedArrows,
   arrowState,
+  activeArrowState,
+  preventTouch,
+  setPreviouslyActiveArrow,
 }: ArrowPlotterProps) {
   const [arrows, setArrows] = arrowState;
+  const [activeArrow, setActiveArrow] = activeArrowState;
+
   const [ringCount, setRingCount] = useState(target.rings);
 
   const targetRef = useRef<SVGSVGElement>(null);
-  const boundaryRef = useRef<SVGCircleElement>(null);
-  const [arrowCoordinatePairs, setArrowCoordinatePairs] =
-    useState<CoordinatePair[]>();
-  const [activeArrowKey, setActiveArrowKey] = useState<number>();
   const [touchIsActive, setTouchIsActive] = useState(false);
-  const svgDimensions = getSVGDimensions(targetRef);
-
+  const [svgDimensions, setSvgDimensions] = useState<SVGDim>();
   useEffect(() => {
-    const newArrows: Arrow[] | undefined =
-      svgDimensions &&
-      formatArrows({
-        arrowCoordinatePairs,
-        target,
-        svgDimensions,
-        activeArrowKey,
-        focusedArrows,
-      });
-
-      setArrows(newArrows)
-  }, []);
+    setSvgDimensions(getSVGDimensions(targetRef));
+  }, [targetRef]);
 
   return (
     <svg
@@ -48,56 +36,54 @@ export default function ArrowPlotter({
       className={styles.main_canvas}
       viewBox="0 0 100 100"
       onTouchStart={(e) => {
-        if (
-          arrowCoordinatePairs &&
-          arrowCoordinatePairs.length % rules.setSize === 0
-        ) {
-          console.log("prevent touch", activeArrowKey);
-          return;
-        }
+        if (svgDimensions === undefined || preventTouch) return;
+        const arrowId = activeArrow || uuid();
         setTouchIsActive(true);
-        setArrowCoordinatePairs((arrowCoordinatePairs) => {
-          if (!arrowCoordinatePairs) {
-            // first arrow
-            return [extractTouch(e.touches)];
-          }
-          const merge = mergeArrow(
-            arrowCoordinatePairs,
-            extractTouch(e.touches),
-            activeArrowKey!
-          );
-          return merge;
+        setActiveArrow(arrowId);
+        const arrow = formatArrow({
+          arrowCoordinatePair: extractTouch(e.touches),
+          svgDimensions,
+          target,
+          id: arrowId,
         });
+        setArrows(mergeArrow(arrow, arrows));
       }}
       onTouchMove={(e) => {
-        if (!touchIsActive) return;
-        const merge = mergeArrow(
-          arrowCoordinatePairs!,
-          extractTouch(e.touches),
-          activeArrowKey!
-        );
-        setArrowCoordinatePairs(merge);
+        if (!touchIsActive || !svgDimensions) return;
+        const arrow = formatArrow({
+          arrowCoordinatePair: extractTouch(e.touches),
+          svgDimensions,
+          target,
+          id: activeArrow!,
+        });
+        setArrows(mergeArrow(arrow, arrows));
       }}
       onTouchEnd={() => {
-        if (touchIsActive) {
-          setTouchIsActive(false);
-          setActiveArrowKey(arrowCoordinatePairs!.length + 1);
-        }
+        if (!touchIsActive || !svgDimensions) return;
+        const arrow: Partial<Arrow> = {
+          id: activeArrow!,
+        };
+        setArrows(mergeArrow(arrow, arrows));
+        setTouchIsActive(false);
+        setActiveArrow(undefined);
+        setPreviouslyActiveArrow(arrow.id);
       }}
     >
-      <circle ref={boundaryRef} />
+      <circle />
       {drawRings(ringCount)}
       {touchIsActive &&
         svgDimensions &&
         drawGuideLine({
           svgDimensions,
-          activeArrow: arrows?.find((arrow) => arrow.active),
+          activeArrow: arrows?.find((arrow) => arrow.id === activeArrow!),
         })}
       {svgDimensions &&
         arrows &&
         drawArrows({
           svgDimensions,
           arrows,
+          activeArrow,
+          focusedArrows,
         })}
     </svg>
   );

@@ -3,6 +3,7 @@ export interface Vector {
   distance: number;
 }
 export interface Target {
+  id: string;
   radius: number;
   rings: number;
   max: number;
@@ -14,16 +15,21 @@ export interface Rules {
 }
 
 export interface ArrowPlotterProps {
-  rules: Rules;
   target: Target;
-  focusedArrows?: number[];
+  focusedArrows?: string[];
   preventTouch?: boolean;
   arrowState: ArrowState;
+  activeArrowState: ActiveArrowState;
+  setPreviouslyActiveArrow: Dispatch<SetStateAction<string | undefined>>;
 }
 
 export type ArrowState = [
-  Arrow[] | undefined,
+  Arrow[],
   Dispatch<SetStateAction<Arrow[] | undefined>>
+];
+export type ActiveArrowState = [
+  string | undefined,
+  Dispatch<SetStateAction<string | undefined>>
 ];
 
 export type CoordinatePair = [number, number];
@@ -36,10 +42,9 @@ export interface SVGDim {
 
 export interface Arrow {
   value: number;
-  active: boolean;
-  focused?: boolean;
   coordinates: CoordinatePair;
   vector: Vector;
+  id: string;
 }
 
-export type Set = (Arrow | null)[];
+export type Set = Arrow[];

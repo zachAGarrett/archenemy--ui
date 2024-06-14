@@ -1,10 +1,12 @@
 import { Arrow, SVGDim } from "./types";
+import { UseConfirmationTimer } from "./useConfirmationTimer";
 
 export interface DrawArrowsProps {
   svgDimensions: SVGDim;
-  arrows?: Arrow[];
+  arrows?: Partial<Arrow>[];
   focusedArrows?: string[];
   activeArrow?: string;
+  confirmationTimer: UseConfirmationTimer;
 }
 
 export default function drawArrows({
@@ -12,9 +14,11 @@ export default function drawArrows({
   arrows,
   focusedArrows,
   activeArrow,
+  confirmationTimer,
 }: DrawArrowsProps) {
   const focusAll = !focusedArrows;
   return arrows?.map(({ coordinates, id }, i) => {
+    if (!coordinates) return;
     const x = coordinates[0];
     const y = coordinates[1];
     const relX = `${
@@ -23,6 +27,19 @@ export default function drawArrows({
     const relY = `${
       ((y - svgDimensions.rect.top) / svgDimensions.rect.height) * 100
     }%`;
+
+    const activeArrowAnimationProps = {
+      radius: {
+        dur: "1.5s",
+        repeatCount: "indefinite",
+        values: "0.1;3;0.1",
+      },
+      opacity: {
+        dur: "1.5s",
+        repeatCount: "indefinite",
+        values: "1;0.5;1",
+      },
+    };
 
     return (
       <g key={i}>
@@ -33,17 +50,13 @@ export default function drawArrows({
                 attributeType="SVG"
                 attributeName="r"
                 begin="0s"
-                dur="1.5s"
-                repeatCount="indefinite"
-                values="0.1;3;0.1"
+                {...activeArrowAnimationProps.radius}
               />
               <animate
                 attributeType="CSS"
                 attributeName="opacity"
                 begin="0s"
-                dur="1.5s"
-                repeatCount="indefinite"
-                values="1;0.5;1"
+                {...activeArrowAnimationProps.opacity}
               />
             </>
           )}
@@ -54,7 +67,7 @@ export default function drawArrows({
           cy={relY}
           r={1}
           fill="green"
-          opacity={focusedArrows?.includes(id) || focusAll ? 1 : 0.3}
+          opacity={focusedArrows?.includes(id!) || focusAll ? 1 : 0.3}
           stroke="black"
           strokeWidth={0.2}
         />

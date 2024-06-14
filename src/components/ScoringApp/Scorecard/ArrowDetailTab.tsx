@@ -1,48 +1,46 @@
 import { Card, Space, Typography } from "antd";
 import { Arrow, Target } from "../lib/types";
-import radiansToDegrees from "../lib/radiansToDegrees";
+import cleanAngleValue from "../lib/cleanAngleValue";
 
 const { Text } = Typography;
 
 export interface ArrowDetailTabProps {
-  arrow: Arrow;
+  arrow: Partial<Arrow>;
   target: Target;
 }
 
 export default function ArrowDetailTab({ arrow, target }: ArrowDetailTabProps) {
-  const { value, vector, id } = arrow;
+  const { value, vector } = arrow;
 
-  const cleanAngleValue = (angleInRadians: number) => {
-    const possiblyNegativeDegreeValue = radiansToDegrees(angleInRadians) - 90;
-    if (possiblyNegativeDegreeValue < 0) {
-      return Math.round(360 + possiblyNegativeDegreeValue);
-    } else {
-      return Math.round(possiblyNegativeDegreeValue);
-    }
-  };
-  return (
-    <Card>
-      <Space direction="vertical">
-        <Space>
-          <Text strong>Value</Text>
-          <Text>{value}</Text>
+  const emptyArrow = !vector || !value;
+
+  if (emptyArrow) {
+    return <Card>Tap to place an arrow.</Card>;
+  } else {
+    return (
+      <Card>
+        <Space direction="vertical">
+          <Space>
+            <Text strong>Value</Text>
+            <Text>{value}</Text>
+          </Space>
+          <Space>
+            <Text strong>Distance</Text>
+            {vector.distance && (
+              <Text>{Math.round(vector.distance * 10 * target.radius)} mm</Text>
+            )}
+          </Space>
+          <Space>
+            <Text strong>Angle</Text>
+            {vector.angle && (
+              <Text>
+                {cleanAngleValue(vector.angle)}
+                &deg;
+              </Text>
+            )}
+          </Space>
         </Space>
-        <Space>
-          <Text strong>Distance</Text>
-          {vector.distance && (
-            <Text>{Math.round(vector.distance * 10 * target.radius)} mm</Text>
-          )}
-        </Space>
-        <Space>
-          <Text strong>Angle</Text>
-          {vector.angle && (
-            <Text>
-              {cleanAngleValue(vector.angle)}
-              &deg;
-            </Text>
-          )}
-        </Space>
-      </Space>
-    </Card>
-  );
+      </Card>
+    );
+  }
 }

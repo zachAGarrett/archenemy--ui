@@ -9,6 +9,7 @@ import drawRings from "../lib/drawRings";
 import drawGuideLine from "../lib/drawGuideLine";
 import formatArrow from "../lib/formatArrow";
 import { v4 as uuid } from "uuid";
+import { rule } from "postcss";
 
 export default function ArrowPlotter({
   target,
@@ -16,7 +17,8 @@ export default function ArrowPlotter({
   arrowState,
   activeArrowState,
   preventTouch,
-  setPreviouslyActiveArrow,
+  confirmationTimer,
+  rules,
 }: ArrowPlotterProps) {
   const [arrows, setArrows] = arrowState;
   const [activeArrow, setActiveArrow] = activeArrowState;
@@ -37,6 +39,9 @@ export default function ArrowPlotter({
       viewBox="0 0 100 100"
       onTouchStart={(e) => {
         if (svgDimensions === undefined || preventTouch) return;
+        if (confirmationTimer.active) {
+          confirmationTimer.cancel();
+        }
         const arrowId = activeArrow || uuid();
         setTouchIsActive(true);
         setActiveArrow(arrowId);
@@ -60,13 +65,30 @@ export default function ArrowPlotter({
       }}
       onTouchEnd={() => {
         if (!touchIsActive || !svgDimensions) return;
-        const arrow: Partial<Arrow> = {
-          id: activeArrow!,
+
+        // determine which arrow to activate
+        const arrowsInLastSet =
+          arrows.length % rules.setSize === 0
+            ? 3
+            : arrows.length % rules.setSize;
+        const activeArrowIsInLastSet =
+          arrows.length - arrowsInLastSet <=
+          arrows.findIndex((arrow) => arrow.id === activeArrow);
+        const lastArrowIsEmpty =
+          !arrows[arrows.length - 1].vector ||
+          arrows[arrows.length - 1].value === undefined;
+        const arrowToActivate: Partial<Arrow> = {
+          id: activeArrowIsInLastSet
+            ? lastArrowIsEmpty
+              ? arrows[arrows.length - 1].id
+              : uuid()
+            : activeArrow,
         };
-        setArrows(mergeArrow(arrow, arrows));
         setTouchIsActive(false);
-        setActiveArrow(undefined);
-        setPreviouslyActiveArrow(arrow.id);
+        confirmationTimer.start(() => {
+          !lastArrowIsEmpty && setArrows(mergeArrow(arrowToActivate, arrows));
+          setActiveArrow(arrowToActivate.id);
+        }, 1000);
       }}
     >
       <circle />
@@ -84,6 +106,7 @@ export default function ArrowPlotter({
           arrows,
           activeArrow,
           focusedArrows,
+          confirmationTimer,
         })}
     </svg>
   );

@@ -1,11 +1,20 @@
 "use client";
 
-import { Card, Divider, List, Space } from "antd";
+import {
+  Card,
+  Divider,
+  Flex,
+  List,
+  Progress,
+  ProgressProps,
+  Space,
+} from "antd";
 import ArrowPlotter from "./ArrowPlotter";
 import { Arrow, Rules, Target } from "./lib/types";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import chunkArray from "./lib/chunkArray";
 import Scorecard from "./Scorecard";
+import useConfirmationTimer from "./lib/useConfirmationTimer";
 
 export default function ScoringApp() {
   const rules: Rules = { setSize: 3 };
@@ -19,24 +28,39 @@ export default function ScoringApp() {
 
   const [arrows, setArrows] = useState<Arrow[]>([]);
   const [activeArrow, setActiveArrow] = useState<string>();
-  const [previouslyActiveArrow, setPreviouslyActiveArrow] = useState<string>();
+  const confirmationTimer = useConfirmationTimer();
   const [focusedArrows, setFocusedArrows] = useState<string[]>();
 
+  const elapsedDurationPercent = useMemo(() => {
+    return (
+      (confirmationTimer.duration.remaining /
+        confirmationTimer.duration.total) *
+      100
+    );
+  }, [confirmationTimer.duration.remaining, confirmationTimer.duration.total]);
+
   return (
-    <Space direction="vertical" style={{ width: "100%" }}>
-      <ArrowPlotter
-        target={target}
-        focusedArrows={focusedArrows}
-        arrowState={[arrows, setArrows]}
-        activeArrowState={[activeArrow, setActiveArrow]}
-        setPreviouslyActiveArrow={setPreviouslyActiveArrow}
-        preventTouch={false}
-      />
-      <Scorecard
-        sets={arrows && chunkArray(arrows, rules.setSize)}
-        target={target}
-        activeArrowState={[activeArrow, setActiveArrow]}
-      />
-    </Space>
+    <Flex vertical style={{ width: "100%", height: "100%" }}>
+      <div style={{ height: "100%", marginInline: 10, marginTop: 10 }}>
+        <ArrowPlotter
+          target={target}
+          focusedArrows={focusedArrows}
+          arrowState={[arrows, setArrows]}
+          activeArrowState={[activeArrow, setActiveArrow]}
+          preventTouch={false}
+          confirmationTimer={confirmationTimer}
+          rules={rules}
+        />
+      </div>
+      <Divider />
+      <div style={{ height: "100%", margin: 10 }}>
+        <Scorecard
+          sets={arrows && chunkArray(arrows, rules.setSize)}
+          target={target}
+          activeArrowState={[activeArrow, setActiveArrow]}
+          setFocusedArrows={setFocusedArrows}
+        />
+      </div>
+    </Flex>
   );
 }

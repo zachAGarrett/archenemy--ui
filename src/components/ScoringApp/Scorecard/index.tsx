@@ -1,20 +1,20 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
-import { ActiveArrowState, Arrow, Set, Target } from "../lib/types";
-import { Card, Tabs, Typography } from "antd";
+import { ActiveArrowState, Set, Target } from "../lib/types";
+import { Tabs } from "antd";
 import ArrowDetailTab from "./ArrowDetailTab";
-
-const { Text } = Typography;
 
 export interface ScorecardProps {
   sets: Set[];
   target: Target;
   activeArrowState: ActiveArrowState;
+  setFocusedArrows: Dispatch<SetStateAction<string[] | undefined>>;
 }
 
 export default function Scorecard({
   sets,
   target,
   activeArrowState,
+  setFocusedArrows,
 }: ScorecardProps) {
   const [activeArrow, setActiveArrow] = activeArrowState;
   const lastSetNumber = sets.length - 1;
@@ -22,9 +22,22 @@ export default function Scorecard({
   const lastArrow = lastSet && lastSet[lastSet.length - 1];
   const [activeSet, setActiveSet] = useState<string>();
 
-  return sets.length > 0 ? (
+  useEffect(() => {
+    const setContainingActiveArrow = sets.findIndex((set) =>
+      set.some((arrow) => arrow.id === activeArrow)
+    );
+    setActiveSet(String(setContainingActiveArrow));
+  }, [activeArrow]);
+  useEffect(() => {
+    activeSet &&
+      sets.length > 0 &&
+      setFocusedArrows(sets[Number(activeSet)]?.map((arrow) => arrow.id));
+  }, [activeSet, activeArrow]);
+
+  return (
     <Tabs
       tabPosition="left"
+      style={{ height: "100%" }}
       activeKey={activeSet || String(lastSetNumber)}
       onTabClick={(key) => {
         setActiveSet(key);
@@ -53,7 +66,5 @@ export default function Scorecard({
         };
       })}
     />
-  ) : (
-    <Card>Tap to place an arrow</Card>
   );
 }

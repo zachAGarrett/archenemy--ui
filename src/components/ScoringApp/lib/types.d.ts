@@ -1,3 +1,5 @@
+import { UseConfirmationTimer } from "./useConfirmationTimer";
+
 export interface Vector {
   angle: number;
   distance: number;
@@ -20,7 +22,8 @@ export interface ArrowPlotterProps {
   preventTouch?: boolean;
   arrowState: ArrowState;
   activeArrowState: ActiveArrowState;
-  setPreviouslyActiveArrow: Dispatch<SetStateAction<string | undefined>>;
+  confirmationTimer: UseConfirmationTimer;
+  rules: Rules
 }
 
 export type ArrowState = [

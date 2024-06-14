@@ -55,7 +55,7 @@ export default function ScoringApp() {
       <Divider />
       <div style={{ height: "100%", margin: 10 }}>
         <Scorecard
-          sets={arrows && chunkArray(arrows, rules.setSize)}
+          sets={arrows.length > 0 ? chunkArray(arrows, rules.setSize) : [[]]}
           target={target}
           activeArrowState={[activeArrow, setActiveArrow]}
           setFocusedArrows={setFocusedArrows}

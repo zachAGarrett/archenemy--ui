@@ -1,6 +1,6 @@
 import { Dispatch, SetStateAction, useEffect, useState } from "react";
 import { ActiveArrowState, Set, Target } from "../lib/types";
-import { Tabs } from "antd";
+import { Button, Card, Flex, Tabs, message } from "antd";
 import ArrowDetailTab from "./ArrowDetailTab";
 
 export interface ScorecardProps {
@@ -21,6 +21,13 @@ export default function Scorecard({
   const lastSet = sets[lastSetNumber];
   const lastArrow = lastSet && lastSet[lastSet.length - 1];
   const [activeSet, setActiveSet] = useState<string>();
+  const [messageApi, contextHolder] = message.useMessage();
+  const setUpdated = () => {
+    messageApi.open({
+      type: "success",
+      content: "Set updated",
+    });
+  };
 
   useEffect(() => {
     const setContainingActiveArrow = sets.findIndex((set) =>
@@ -34,37 +41,63 @@ export default function Scorecard({
       setFocusedArrows(sets[Number(activeSet)]?.map((arrow) => arrow.id));
   }, [activeSet, activeArrow]);
 
+  const showConfirmSetButton = Number(activeSet) !== lastSetNumber;
+
   return (
-    <Tabs
-      tabPosition="left"
-      style={{ height: "100%" }}
-      activeKey={activeSet || String(lastSetNumber)}
-      onTabClick={(key) => {
-        setActiveSet(key);
-        setActiveArrow(sets[Number(key)][0].id);
-      }}
-      items={sets.map((set, setIndex) => {
-        const setNumber = setIndex + 1;
-        return {
-          label: `Set ${setNumber}`,
-          key: String(setIndex),
-          children: (
-            <Tabs
-              activeKey={activeArrow || lastArrow.id}
-              tabPosition="top"
-              onTabClick={(key) => setActiveArrow(key)}
-              items={set.map((arrow, arrowIndex) => {
-                const arrowNumber = String(arrowIndex + 1);
-                return {
-                  label: `Arrow ${arrowNumber}`,
-                  key: arrow.id,
-                  children: <ArrowDetailTab arrow={arrow} target={target} />,
-                };
-              })}
-            />
-          ),
-        };
-      })}
-    />
+    <>
+      {contextHolder}
+      <Tabs
+        tabPosition="left"
+        style={{ height: "100%" }}
+        activeKey={String(activeSet) || String(lastSetNumber)}
+        onTabClick={(key) => {
+          setActiveSet(key);
+          setActiveArrow(sets[Number(key)][0]?.id);
+        }}
+        defaultActiveKey="0"
+        items={sets.map((set, setIndex) => {
+          const setNumber = setIndex + 1;
+          return {
+            label: `Set ${setNumber}`,
+            key: String(setIndex),
+            children: (
+              <Flex vertical style={{ height: "100%" }} gap={10}>
+                {set.length > 0 ? (
+                  <Tabs
+                    activeKey={activeArrow || lastArrow.id}
+                    tabPosition="top"
+                    onTabClick={(key) => setActiveArrow(key)}
+                    items={set.map((arrow, arrowIndex) => {
+                      const arrowNumber = String(arrowIndex + 1);
+                      return {
+                        label: `Arrow ${arrowNumber}`,
+                        key: arrow.id,
+                        children: (
+                          <ArrowDetailTab arrow={arrow} target={target} />
+                        ),
+                      };
+                    })}
+                  />
+                ) : (
+                  <Card>Place your first arrow</Card>
+                )}
+                {showConfirmSetButton && (
+                  <Button
+                    onClick={() => {
+                      setActiveSet(String(lastSetNumber));
+                      setActiveArrow(sets[lastSetNumber][0]?.id);
+                      setUpdated();
+                    }}
+                    type="primary"
+                  >
+                    Confirm set
+                  </Button>
+                )}
+              </Flex>
+            ),
+          };
+        })}
+      />
+    </>
   );
 }

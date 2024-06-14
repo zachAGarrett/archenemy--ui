@@ -21,7 +21,7 @@ export default function ArrowPlotter({
   rules,
 }: ArrowPlotterProps) {
   const [arrows, setArrows] = arrowState;
-  const [activeArrow, setActiveArrow] = activeArrowState;
+  const [activeArrowId, setActiveArrowId] = activeArrowState;
 
   const [ringCount, setRingCount] = useState(target.rings);
 
@@ -29,16 +29,16 @@ export default function ArrowPlotter({
   const [touchIsActive, setTouchIsActive] = useState(false);
   const [svgDimensions, setSvgDimensions] = useState<SVGDim>();
   const [messageApi, contextHolder] = message.useMessage();
-  const arrowAdded = () => {
+  const arrowAdded = (value?: number) => {
     messageApi.open({
       type: "success",
-      content: "Arrow added",
+      content: `Arrow added${value === undefined ? "" : ": " + value}`,
     });
   };
-  const arrowUpdated = () => {
+  const arrowUpdated = (value?: number) => {
     messageApi.open({
       type: "success",
-      content: "Arrow updated",
+      content: `Arrow updated${value === undefined ? "" : ": " + value}`,
     });
   };
   useEffect(() => {
@@ -57,9 +57,9 @@ export default function ArrowPlotter({
           if (confirmationTimer.active) {
             confirmationTimer.cancel();
           }
-          const arrowId = activeArrow || uuid();
+          const arrowId = activeArrowId || uuid();
           setTouchIsActive(true);
-          setActiveArrow(arrowId);
+          setActiveArrowId(arrowId);
           const arrow = formatArrow({
             arrowCoordinatePair: extractTouch(e.touches),
             svgDimensions,
@@ -74,7 +74,7 @@ export default function ArrowPlotter({
             arrowCoordinatePair: extractTouch(e.touches),
             svgDimensions,
             target,
-            id: activeArrow!,
+            id: activeArrowId!,
           });
           setArrows(mergeArrow(arrow, arrows));
         }}
@@ -88,7 +88,7 @@ export default function ArrowPlotter({
               : arrows.length % rules.setSize;
           const activeArrowIsInLastSet =
             arrows.length - arrowsInLastSet <=
-            arrows.findIndex((arrow) => arrow.id === activeArrow);
+            arrows.findIndex((arrow) => arrow.id === activeArrowId);
           const lastArrowIsEmpty =
             !arrows[arrows.length - 1].vector ||
             arrows[arrows.length - 1].value === undefined;
@@ -97,15 +97,18 @@ export default function ArrowPlotter({
               ? lastArrowIsEmpty
                 ? arrows[arrows.length - 1].id
                 : uuid()
-              : activeArrow,
+              : activeArrowId,
           };
           setTouchIsActive(false);
           confirmationTimer.start(() => {
             const activeArrowIsLastArrow =
-              arrows[arrows.length - 1].id === activeArrow;
+              arrows[arrows.length - 1].id === activeArrowId;
             !lastArrowIsEmpty && setArrows(mergeArrow(arrowToActivate, arrows));
-            setActiveArrow(arrowToActivate.id);
-            activeArrowIsLastArrow ? arrowAdded() : arrowUpdated();
+            const activeArrow = arrows.find(({ id }) => id === activeArrowId);
+            activeArrowIsLastArrow
+              ? arrowAdded(activeArrow?.value)
+              : arrowUpdated(activeArrow?.value);
+            setActiveArrowId(arrowToActivate.id);
           }, 1000);
         }}
       >
@@ -115,14 +118,14 @@ export default function ArrowPlotter({
           svgDimensions &&
           drawGuideLine({
             svgDimensions,
-            activeArrow: arrows?.find((arrow) => arrow.id === activeArrow!),
+            activeArrow: arrows?.find((arrow) => arrow.id === activeArrowId!),
           })}
         {svgDimensions &&
           arrows &&
           drawArrows({
             svgDimensions,
             arrows,
-            activeArrow,
+            activeArrow: activeArrowId,
             focusedArrows,
             confirmationTimer,
           })}

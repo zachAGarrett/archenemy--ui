@@ -14,6 +14,7 @@ export interface Target {
 
 export interface Rules {
   setSize: number;
+  setDuration: number;
 }
 
 export interface ArrowPlotterProps {
@@ -23,7 +24,7 @@ export interface ArrowPlotterProps {
   arrowState: ArrowState;
   activeArrowState: ActiveArrowState;
   confirmationTimer: UseConfirmationTimer;
-  rules: Rules
+  rules: Rules;
 }
 
 export type ArrowState = [

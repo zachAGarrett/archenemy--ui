@@ -14,7 +14,7 @@ export default withPageAuthRequired(
   async function Session() {
     const session = await getSession();
     const activeTrainingSession: TrainingSession | undefined = {
-      rules: { setSize: 3 },
+      rules: { setSize: 3, setDuration: 120 },
       target: {
         id: "test",
         radius: 66,

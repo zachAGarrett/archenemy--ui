@@ -18,7 +18,7 @@ const RootLayout = async ({ children }: { children: React.ReactNode }) => {
           <StyleProvider>
             <Flex vertical style={{ height: "100%" }}>
               <Flex justify="end">
-                <Link href="profile">
+                <Link href="/profile">
                   <Button
                     type="primary"
                     size="large"

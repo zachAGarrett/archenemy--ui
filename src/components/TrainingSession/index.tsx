@@ -1,6 +1,6 @@
 "use client";
 
-import { Divider, Flex } from "antd";
+import { Card, Divider, Flex } from "antd";
 import ArrowPlotter from "./ArrowPlotter";
 import { Arrow, Rules, Target } from "./lib/types";
 import { useState } from "react";
@@ -9,23 +9,25 @@ import Scorecard from "./Scorecard";
 import useConfirmationTimer from "./lib/useConfirmationTimer";
 import { Claims } from "@auth0/nextjs-auth0";
 
-export default function ScoringApp({ user }: { user?: Claims | null }) {
-  const rules: Rules = { setSize: 3 };
-  const target: Target = {
-    id: "test",
-    radius: 66,
-    rings: 10,
-    max: 10,
-    min: 0,
-  };
-
-  const [arrows, setArrows] = useState<Arrow[]>([]);
+export interface TrainingSessionProps {
+  user?: Claims | null;
+  rules: Rules;
+  target: Target;
+  initialArrows?: Arrow[];
+}
+export default function TrainingSession({
+  user,
+  rules,
+  target,
+  initialArrows = [],
+}: TrainingSessionProps) {
+  const [arrows, setArrows] = useState<Arrow[]>(initialArrows);
   const [activeArrow, setActiveArrow] = useState<string>();
   const confirmationTimer = useConfirmationTimer();
   const [focusedArrows, setFocusedArrows] = useState<string[]>();
   return (
     <Flex vertical style={{ width: "100%", height: "100%" }}>
-      <Flex style={{ height: "100%", marginInline: 10, marginTop: 10 }}>
+      <Card style={{ height: "100%", marginInline: 10 }}>
         <ArrowPlotter
           target={target}
           focusedArrows={focusedArrows}
@@ -35,9 +37,9 @@ export default function ScoringApp({ user }: { user?: Claims | null }) {
           confirmationTimer={confirmationTimer}
           rules={rules}
         />
-      </Flex>
+      </Card>
       <Divider />
-      <div style={{ height: "100%" }}>
+      <div style={{ height: "100%", paddingBottom: 10 }}>
         <Scorecard
           sets={arrows.length > 0 ? chunkArray(arrows, rules.setSize) : [[]]}
           target={target}

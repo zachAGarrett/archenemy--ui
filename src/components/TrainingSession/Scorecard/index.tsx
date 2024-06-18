@@ -61,7 +61,11 @@ export default function Scorecard({
             label: `Set ${setNumber}`,
             key: String(setIndex),
             children: (
-              <Flex vertical style={{ height: "100%" }} gap={10}>
+              <Flex
+                vertical
+                style={{ height: "100%", paddingRight: 10 }}
+                gap={10}
+              >
                 {set.length > 0 ? (
                   <Tabs
                     activeKey={activeArrow || lastArrow.id}

@@ -18,12 +18,8 @@ export default function ArrowDetailTab({ arrow, target }: ArrowDetailTabProps) {
     return <Card>Tap to place an arrow.</Card>;
   } else {
     return (
-      <Card>
+      <Card title={value}>
         <Space direction="vertical">
-          <Space>
-            <Text strong>Value</Text>
-            <Text>{value}</Text>
-          </Space>
           <Space>
             <Text strong>Distance</Text>
             {vector.distance && (

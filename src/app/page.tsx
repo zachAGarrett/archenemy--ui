@@ -1,11 +1,11 @@
-import ScoringApp from "@/components/ScoringApp";
+import { getSession } from "@auth0/nextjs-auth0";
+import { redirect } from "next/navigation";
 
-import { withPageAuthRequired, getSession } from "@auth0/nextjs-auth0";
+export default async function Home() {
+  const session = await getSession();
+  if (session) {
+    redirect("/session");
+  }
 
-export default withPageAuthRequired(
-  async function Home() {
-    const session = await getSession();
-    return <ScoringApp user={session?.user} />;
-  },
-  { returnTo: "/" }
-);
+  return <a href="/api/auth/login">Login</a>;
+}

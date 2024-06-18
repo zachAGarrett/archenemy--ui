@@ -7,9 +7,9 @@ import { useState } from "react";
 import chunkArray from "./lib/chunkArray";
 import Scorecard from "./Scorecard";
 import useConfirmationTimer from "./lib/useConfirmationTimer";
-import { Session } from "@auth0/nextjs-auth0";
+import { Claims } from "@auth0/nextjs-auth0";
 
-export default function ScoringApp({ session }: { session?: Session | null }) {
+export default function ScoringApp({ user }: { user?: Claims | null }) {
   const rules: Rules = { setSize: 3 };
   const target: Target = {
     id: "test",

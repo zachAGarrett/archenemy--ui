@@ -12,7 +12,7 @@ export interface ArrowDetailTabProps {
 export default function ArrowDetailTab({ arrow, target }: ArrowDetailTabProps) {
   const { value, vector } = arrow;
 
-  const emptyArrow = !vector || !value;
+  const emptyArrow = !vector || value === undefined;
 
   if (emptyArrow) {
     return <Card>Tap to place an arrow.</Card>;

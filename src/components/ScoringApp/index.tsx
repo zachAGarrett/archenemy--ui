@@ -1,22 +1,15 @@
 "use client";
 
-import {
-  Card,
-  Divider,
-  Flex,
-  List,
-  Progress,
-  ProgressProps,
-  Space,
-} from "antd";
+import { Divider, Flex } from "antd";
 import ArrowPlotter from "./ArrowPlotter";
 import { Arrow, Rules, Target } from "./lib/types";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import chunkArray from "./lib/chunkArray";
 import Scorecard from "./Scorecard";
 import useConfirmationTimer from "./lib/useConfirmationTimer";
+import { Session } from "@auth0/nextjs-auth0";
 
-export default function ScoringApp() {
+export default function ScoringApp({ session }: { session?: Session | null }) {
   const rules: Rules = { setSize: 3 };
   const target: Target = {
     id: "test",
@@ -30,18 +23,9 @@ export default function ScoringApp() {
   const [activeArrow, setActiveArrow] = useState<string>();
   const confirmationTimer = useConfirmationTimer();
   const [focusedArrows, setFocusedArrows] = useState<string[]>();
-
-  const elapsedDurationPercent = useMemo(() => {
-    return (
-      (confirmationTimer.duration.remaining /
-        confirmationTimer.duration.total) *
-      100
-    );
-  }, [confirmationTimer.duration.remaining, confirmationTimer.duration.total]);
-
   return (
     <Flex vertical style={{ width: "100%", height: "100%" }}>
-      <div style={{ height: "100%", marginInline: 10, marginTop: 10 }}>
+      <Flex style={{ height: "100%", marginInline: 10, marginTop: 10 }}>
         <ArrowPlotter
           target={target}
           focusedArrows={focusedArrows}
@@ -51,9 +35,9 @@ export default function ScoringApp() {
           confirmationTimer={confirmationTimer}
           rules={rules}
         />
-      </div>
+      </Flex>
       <Divider />
-      <div style={{ height: "100%", margin: 10 }}>
+      <div style={{ height: "100%" }}>
         <Scorecard
           sets={arrows.length > 0 ? chunkArray(arrows, rules.setSize) : [[]]}
           target={target}

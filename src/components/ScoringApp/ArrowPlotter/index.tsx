@@ -29,16 +29,10 @@ export default function ArrowPlotter({
   const [touchIsActive, setTouchIsActive] = useState(false);
   const [svgDimensions, setSvgDimensions] = useState<SVGDim>();
   const [messageApi, contextHolder] = message.useMessage();
-  const arrowAdded = (value?: number) => {
+  const notification = (content: string) => {
     messageApi.open({
       type: "success",
-      content: `Arrow added${value === undefined ? "" : ": " + value}`,
-    });
-  };
-  const arrowUpdated = (value?: number) => {
-    messageApi.open({
-      type: "success",
-      content: `Arrow updated${value === undefined ? "" : ": " + value}`,
+      content,
     });
   };
   useEffect(() => {
@@ -103,12 +97,22 @@ export default function ArrowPlotter({
           confirmationTimer.start(() => {
             const activeArrowIsLastArrow =
               arrows[arrows.length - 1].id === activeArrowId;
+
+            const activeArrowIsLastArrowInSet =
+              activeArrowIsLastArrow && arrows.length % rules.setSize === 0;
+
             !lastArrowIsEmpty && setArrows(mergeArrow(arrowToActivate, arrows));
             const activeArrow = arrows.find(({ id }) => id === activeArrowId);
-            activeArrowIsLastArrow
-              ? arrowAdded(activeArrow?.value)
-              : arrowUpdated(activeArrow?.value);
+            notification(
+              `Arrow ${activeArrowIsLastArrow ? "added" : "updated"}${
+                activeArrow && activeArrow.value !== undefined
+                  ? ": " + activeArrow.value
+                  : ""
+              }`
+            );
             setActiveArrowId(arrowToActivate.id);
+
+            activeArrowIsLastArrowInSet && notification("Set complete");
           }, 1000);
         }}
       >

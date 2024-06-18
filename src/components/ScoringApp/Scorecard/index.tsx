@@ -22,10 +22,10 @@ export default function Scorecard({
   const lastArrow = lastSet && lastSet[lastSet.length - 1];
   const [activeSet, setActiveSet] = useState<string>();
   const [messageApi, contextHolder] = message.useMessage();
-  const setUpdated = () => {
+  const notification = (content: string) => {
     messageApi.open({
       type: "success",
-      content: "Set updated",
+      content,
     });
   };
 
@@ -86,7 +86,7 @@ export default function Scorecard({
                     onClick={() => {
                       setActiveSet(String(lastSetNumber));
                       setActiveArrow(sets[lastSetNumber][0]?.id);
-                      setUpdated();
+                      notification("Set updated");
                     }}
                     type="primary"
                   >

@@ -1,4 +1,4 @@
-import TrainingSessionBuilder from "@/components/TrainingSessionManager/TrainingSessionBuilder";
+import TrainingSessionBuilder from "@/components/TrainingSession/Builder";
 
 export default function NewSession() {
   return <TrainingSessionBuilder />;

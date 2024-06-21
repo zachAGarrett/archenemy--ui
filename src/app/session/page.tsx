@@ -1,6 +1,6 @@
-import TrainingSession from "@/components/TrainingSession";
-import { Arrow, Rules, Target } from "@/components/TrainingSession/lib/types";
-import TrainingSessionManager from "@/components/TrainingSessionManager";
+import TrainingSession from "@/components/TrainingSession/Active";
+import { Arrow, Rules, Target } from "@/components/TrainingSession/Active/lib/types";
+import TrainingSessionManager from "@/components/TrainingSession/Manager";
 import { getSession, withPageAuthRequired } from "@auth0/nextjs-auth0";
 
 export interface TrainingSession {

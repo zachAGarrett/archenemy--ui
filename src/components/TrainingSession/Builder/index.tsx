@@ -12,30 +12,46 @@ import Confirm from "./sections/Confirm";
 import { TrainingSessionConfig } from "./types";
 
 export const trainingSessionFormLabelMap = {
-  name: { label: "Session name", errorMessage: "Give your session a name" },
-  targetSize: { label: "Target size", errorMessage: "Choose a target size" },
+  name: {
+    label: "Session name",
+    errorMessage: "Give your session a name",
+    unit: null,
+  },
+  targetSize: {
+    label: "Target size",
+    errorMessage: "Choose a target size",
+    unit: "cm",
+  },
   targetDistance: {
     label: "Target distance",
     errorMessage: "Choose a target distance",
+    unit: "m",
   },
   opponentDifficulty: {
     label: "Opponent difficulty distribution",
     errorMessage: "Choose the skill level of your opponents",
+    unit: null,
   },
-  opponentCount: { label: "Number of opponents" },
+  opponentCount: { label: "Number of opponents", unit: null },
   arrowsPerEnd: {
     label: "Arrows per end",
     errorMessage: "Select the number of arrows per end",
+    unit: null,
   },
   timer: {
     label: "Time per arrow",
     errorMessage: "Choose the amount of time per arrow",
+    unit: "s",
   },
-  discipline: { label: "Discipline", errorMessage: "Select a discipline" },
+  discipline: {
+    label: "Discipline",
+    errorMessage: "Select a discipline",
+    unit: null,
+  },
 };
 
 export const initialTrainingSessionConfigState: TrainingSessionConfig = {
-  name: new Date(Date.now()).toLocaleDateString(),
+  name: "",
   targetSize: "122",
   targetDistance: "70",
   opponentDifficulty: [30, 70, 90],
@@ -177,7 +193,7 @@ export default function TrainingSessionBuilder() {
           size="large"
           onClick={currentStep === steps.length - 1 ? submit : next}
         >
-          {currentStep === steps.length - 1 ? "Submit" : "Next"}
+          {currentStep === steps.length - 1 ? "Start Session" : "Next"}
         </Button>
       </Flex>
     </Flex>

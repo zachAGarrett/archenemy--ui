@@ -3,11 +3,12 @@
 import { Card, Divider, Flex } from "antd";
 import ArrowPlotter from "./ArrowPlotter";
 import { Arrow, Rules, Target } from "./lib/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import chunkArray from "./lib/chunkArray";
 import Scorecard from "./Scorecard";
 import useConfirmationTimer from "./lib/useConfirmationTimer";
 import { Claims } from "@auth0/nextjs-auth0";
+import useLocalStorage from "@/hooks/useLocalStorage";
 
 export interface TrainingSessionProps {
   user?: Claims | null;
@@ -21,10 +22,17 @@ export default function TrainingSession({
   target,
   initialArrows = [],
 }: TrainingSessionProps) {
+  const [__, setCurrentStep] = useLocalStorage("currentStep", 0);
+  const [_, setEditedSteps] = useLocalStorage<number[]>("editedSteps", []);
   const [arrows, setArrows] = useState<Arrow[]>(initialArrows);
   const [activeArrow, setActiveArrow] = useState<string>();
   const confirmationTimer = useConfirmationTimer();
   const [focusedArrows, setFocusedArrows] = useState<string[]>();
+  useEffect(() => {
+    setCurrentStep(0);
+    setEditedSteps([]);
+  }, []);
+
   return (
     <Flex vertical style={{ width: "100%", height: "100%" }}>
       <Card style={{ height: "100%", marginInline: 10 }}>

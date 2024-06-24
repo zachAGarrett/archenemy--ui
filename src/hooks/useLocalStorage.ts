@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-type SetValue<T> = T | ((prevValue: T) => T);
+export type SetValue<T> = T | ((prevValue: T) => T);
 
 export default function useLocalStorage<T>(
   key: string,

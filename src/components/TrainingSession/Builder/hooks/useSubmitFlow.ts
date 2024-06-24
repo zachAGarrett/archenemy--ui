@@ -41,7 +41,10 @@ export default function useSubmitFlow() {
         setError(true);
       } else {
         const responseJSON = await response.json();
-        setResponseData(responseJSON);
+        const trainingSessionSubmissionResponse = JSON.parse(
+          responseJSON
+        ) as TrainingSessionSubmissionResponse;
+        setResponseData(trainingSessionSubmissionResponse);
         setError(false);
       }
     } catch (error) {

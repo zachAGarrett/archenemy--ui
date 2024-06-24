@@ -4,10 +4,12 @@ import {
   CheckCircleOutlined,
   WarningOutlined,
 } from "@ant-design/icons";
-import { Divider, Flex, List, Result, Typography } from "antd";
+import { Flex, List, Result, Typography } from "antd";
 import useSubmitFlow from "../hooks/useSubmitFlow";
 import { TrainingSessionConfig } from "../types";
 import { trainingSessionFormLabelMap } from "..";
+import { redirect } from "next/navigation";
+import useLocalStorage, { SetValue } from "@/hooks/useLocalStorage";
 
 export interface ConfirmProps {
   sending: ReturnType<typeof useSubmitFlow>["sending"];
@@ -20,7 +22,6 @@ export interface ConfirmProps {
 const Confirm = ({
   sending,
   error,
-  retry,
   response,
   lastAttempt,
   trainingSessionConfig,
@@ -28,6 +29,10 @@ const Confirm = ({
   const awaitingSubmission = lastAttempt === undefined;
   const doneSending =
     !awaitingSubmission && sending === false && response !== undefined;
+
+  if (doneSending && !error) {
+    redirect(`/session/${response.processId}`);
+  }
 
   return (
     <Show
@@ -41,20 +46,26 @@ const Confirm = ({
         >
           <List
             dataSource={Object.entries(trainingSessionConfig!)}
-            renderItem={([k, v]) => (
-              <List.Item>
-                <Flex justify="space-between" style={{ width: "100%" }}>
-                  <Typography.Text strong>
-                    {
-                      trainingSessionFormLabelMap[
-                        k as keyof typeof trainingSessionFormLabelMap
-                      ]?.label
-                    }
-                  </Typography.Text>
-                  <span>{v}</span>
-                </Flex>
-              </List.Item>
-            )}
+            renderItem={([k, v]) => {
+              const formFieldData =
+                trainingSessionFormLabelMap[
+                  k as keyof typeof trainingSessionFormLabelMap
+                ];
+              return (
+                <List.Item>
+                  <Flex justify="space-between" style={{ width: "100%" }}>
+                    <Typography.Text strong>
+                      {formFieldData.label}
+                    </Typography.Text>
+                    <span>
+                      {`${v}${
+                        formFieldData.unit !== null ? formFieldData.unit : ""
+                      }`}
+                    </span>
+                  </Flex>
+                </List.Item>
+              );
+            }}
           />
         </Show>
       }

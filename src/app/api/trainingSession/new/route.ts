@@ -24,7 +24,6 @@ export async function POST(req: NextRequest) {
       trainingSessionConfig: payload,
       processId: randomUUID(),
     };
-    console.log(response);
     return NextResponse.json(JSON.stringify(response), { status: 200 });
   } catch (error) {
     console.error(error);

@@ -1,32 +1,77 @@
 "use client";
-import { Button, Card, Flex, Steps, StepsProps } from "antd";
+import { Button, Card, Divider, Flex, Steps, StepsProps } from "antd";
 import { useEffect, useState } from "react";
-import TrainingSessionName from "./TrainingSessionName";
 import { useForm } from "antd/es/form/Form";
 import useLocalStorage from "@/hooks/useLocalStorage";
-import submitNewTrainingSession from "./submitNewTrainingSession";
-import TrainingSessionParameters from "./TrainingSessionParameters";
+import Metadata from "./sections/Metadata";
+import Rules from "./sections/Rules";
+import Target from "./sections/Target";
+import Opponents from "./sections/Opponents";
+import useSubmitFlow from "./hooks/useSubmitFlow";
+import Confirm from "./sections/Confirm";
+import { TrainingSessionConfig } from "./types";
+
+export const trainingSessionFormLabelMap = {
+  name: { label: "Session name", errorMessage: "Give your session a name" },
+  targetSize: { label: "Target size", errorMessage: "Choose a target size" },
+  targetDistance: {
+    label: "Target distance",
+    errorMessage: "Choose a target distance",
+  },
+  opponentDifficulty: {
+    label: "Opponent difficulty distribution",
+    errorMessage: "Choose the skill level of your opponents",
+  },
+  opponentCount: { label: "Number of opponents" },
+  arrowsPerEnd: {
+    label: "Arrows per end",
+    errorMessage: "Select the number of arrows per end",
+  },
+  timer: {
+    label: "Time per arrow",
+    errorMessage: "Choose the amount of time per arrow",
+  },
+  discipline: { label: "Discipline", errorMessage: "Select a discipline" },
+};
+
+export const initialTrainingSessionConfigState: TrainingSessionConfig = {
+  name: new Date(Date.now()).toLocaleDateString(),
+  targetSize: "122",
+  targetDistance: "70",
+  opponentDifficulty: [30, 70, 90],
+  opponentCount: 63,
+  arrowsPerEnd: 6,
+  timer: 40,
+  discipline: "recurve",
+};
 
 export default function TrainingSessionBuilder() {
-  const [currentStep, setCurrentStep] = useState(0);
+  const { responseData, error, sending, submitForm, retry, lastAttempt } =
+    useSubmitFlow();
   const [sectionStatus, setSectionStatus] =
     useState<StepsProps["status"]>("process");
-  const [filledValues, setFilledValues] = useLocalStorage<{ [k: string]: any }>(
-    "form",
-    {}
+  const [currentStep, setCurrentStep] = useLocalStorage("currentStep", 0);
+  const [editedSteps, setEditedSteps] = useLocalStorage<number[]>(
+    "editedSteps",
+    []
   );
+  const [trainingSessionConfig, setTrainingSessionConfig] =
+    useLocalStorage<TrainingSessionConfig>(
+      "form",
+      initialTrainingSessionConfigState
+    );
   const [trainingSessionBuilderForm] = useForm();
-  const sessionNamePlaceholder = new Date(Date.now()).toLocaleDateString();
 
-  // load previous form instance
+  // load previous form instance or set default values
   useEffect(() => {
     if (
-      filledValues === undefined ||
-      filledValues === null ||
-      Object.keys(filledValues).length === 0
-    )
+      trainingSessionConfig === undefined ||
+      trainingSessionConfig === null ||
+      Object.keys(trainingSessionConfig).length === 0
+    ) {
       return;
-    trainingSessionBuilderForm.setFieldsValue(filledValues);
+    }
+    trainingSessionBuilderForm.setFieldsValue(trainingSessionConfig);
   }, []);
 
   const next = async () => {
@@ -35,8 +80,11 @@ export default function TrainingSessionBuilder() {
       await trainingSessionBuilderForm.validateFields(
         Object.keys(activeFields)
       );
-      setFilledValues((s) => ({ ...s, ...activeFields }));
-      setCurrentStep(currentStep + 1);
+      setTrainingSessionConfig((s) => ({ ...s, ...activeFields }));
+      setCurrentStep(currentStep ? currentStep + 1 : 1);
+      setEditedSteps([
+        ...new Set(editedSteps ? [...editedSteps, currentStep || 0] : [0]),
+      ]);
       setSectionStatus("process");
     } catch (error) {
       setSectionStatus("error");
@@ -54,11 +102,10 @@ export default function TrainingSessionBuilder() {
       await trainingSessionBuilderForm.validateFields(
         Object.keys(activeFields)
       );
-      const mergedValues = { ...activeFields, ...filledValues };
-      setFilledValues(mergedValues);
-      setCurrentStep(currentStep + 1);
+      const mergedValues = { ...activeFields, ...trainingSessionConfig };
+      setTrainingSessionConfig(mergedValues);
       setSectionStatus("process");
-      await submitNewTrainingSession({
+      await submitForm({
         data: mergedValues,
       });
     } catch (error) {
@@ -68,39 +115,69 @@ export default function TrainingSessionBuilder() {
 
   const steps = [
     {
-      title: "Name",
-      content: <TrainingSessionName form={trainingSessionBuilderForm} />,
+      title: "Metadata",
+      content: <Metadata form={trainingSessionBuilderForm} />,
     },
     {
-      title: "Parameters",
-      content: <TrainingSessionParameters form={trainingSessionBuilderForm} />,
+      title: "Target",
+      content: <Target form={trainingSessionBuilderForm} />,
     },
     {
-      title: "Virtual opponents",
-      content: "Add virtual opponents",
+      title: "Rules",
+      content: <Rules form={trainingSessionBuilderForm} />,
+    },
+    {
+      title: "Opponents",
+      content: <Opponents form={trainingSessionBuilderForm} />,
     },
     {
       title: "Confirm",
-      content: "review / confirm",
+      content: (
+        <Confirm
+          sending={sending}
+          error={error}
+          retry={retry}
+          response={responseData}
+          lastAttempt={lastAttempt}
+          trainingSessionConfig={trainingSessionConfig}
+        />
+      ),
     },
   ];
 
   const items = steps.map((item) => ({ key: item.title, title: item.title }));
 
   return (
-    <Flex vertical style={{ padding: 10, height: "100%" }} gap={10} align="center">
+    <Flex
+      vertical
+      style={{ padding: 10, height: "100%" }}
+      gap={10}
+      align="center"
+    >
       <Steps
+        onChange={(k) => {
+          editedSteps?.includes(k) && setCurrentStep(k);
+        }}
         progressDot
-        current={currentStep}
+        current={currentStep!}
         items={items}
         type={"inline"}
         status={sectionStatus}
       />
-      <Card style={{ width: "100%", flex: 1 }}>{steps[currentStep].content}</Card>
+      <Card style={{ width: "100%", flex: 1 }}>
+        {steps[currentStep!].content}
+      </Card>
       <Flex justify="space-between" style={{ width: "100%" }}>
-        <Button onClick={previous}>prev</Button>
-        <Button onClick={currentStep === steps.length - 1 ? submit : next}>
-          next
+        <Button disabled={!currentStep} onClick={previous} size="large">
+          Back
+        </Button>
+        <Divider type="vertical" style={{ height: "100%" }} />
+        <Button
+          type="primary"
+          size="large"
+          onClick={currentStep === steps.length - 1 ? submit : next}
+        >
+          {currentStep === steps.length - 1 ? "Submit" : "Next"}
         </Button>
       </Flex>
     </Flex>
